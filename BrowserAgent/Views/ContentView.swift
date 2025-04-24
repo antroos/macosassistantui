@@ -17,8 +17,12 @@ struct ContentView: View {
                 Divider()
                     .background(Color.primary.opacity(0.2))
                 
-                // Чат
-                chatScrollView
+                // Чат або стартовий екран
+                if viewModel.messages.isEmpty {
+                    emptyStateView
+                } else {
+                    chatScrollView
+                }
                 
                 // Розділювач
                 Divider()
@@ -70,6 +74,105 @@ struct ContentView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+    }
+    
+    // Стартовий екран, коли чат порожній
+    private var emptyStateView: some View {
+        ScrollView {
+            VStack {
+                Spacer(minLength: 60)
+                
+                // Заголовок
+                emptyStateHeader
+                
+                // Поле вводу
+                emptyStateInputField
+                
+                // Пропозиції
+                emptyStateSuggestions
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+        }
+        .background(colorScheme == .dark ? Color.black.opacity(0.1) : Color.white.opacity(0.3))
+    }
+    
+    // Заголовок для порожнього стану
+    private var emptyStateHeader: some View {
+        Text("З чого почнемо?")
+            .font(.system(size: 40, weight: .bold, design: .rounded))
+            .foregroundColor(.primary)
+            .multilineTextAlignment(.center)
+            .padding(.bottom, 50)
+    }
+    
+    // Поле вводу для порожнього стану
+    private var emptyStateInputField: some View {
+        HStack(spacing: 16) {
+            // Текстове поле
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                .background(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white)
+                )
+                .frame(height: 54)
+                .overlay(
+                    HStack {
+                        Text("Запитайте що завгодно")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                            .padding(.leading, 16)
+                        Spacer()
+                    }
+                )
+            
+            // Кнопка мікрофона
+            Circle()
+                .fill(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.gray.opacity(0.1))
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.gray)
+                )
+        }
+        .padding(.bottom, 30)
+    }
+    
+    // Секція пропозицій для порожнього стану
+    private var emptyStateSuggestions: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Спробуйте:")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundColor(.secondary)
+                .padding(.bottom, 4)
+            
+            suggestionButton("Відкрий Google та знайди відгуки про iPhone 15")
+            suggestionButton("Зайди на сайт Wikipedia і знайди інформацію про Київ")
+            suggestionButton("Знайди розклад кінотеатрів у моєму місті")
+        }
+    }
+    
+    // Кнопка з пропозицією запиту
+    private func suggestionButton(_ text: String) -> some View {
+        Button(action: {
+            viewModel.inputMessage = text
+            viewModel.sendMessage()
+        }) {
+            Text(text)
+                .font(.system(size: 15, weight: .regular, design: .rounded))
+                .foregroundColor(.primary)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(colorScheme == .dark ? Color.gray.opacity(0.2) : Color.white)
+                        .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
+                )
+        }
     }
     
     // Прокручуваний чат
@@ -238,9 +341,7 @@ struct ContentView: View {
                     .textFieldStyle(.plain)
                     .onSubmit {
                         if !viewModel.inputMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            withAnimation {
-                                viewModel.sendMessage()
-                            }
+                            viewModel.sendMessage()
                         }
                     }
                     .submitLabel(.send)

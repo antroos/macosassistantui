@@ -15,7 +15,8 @@ class ChatViewModel: ObservableObject {
     init() {
         // Демо повідомлення для тестування
         #if DEBUG
-        messages = Message.sampleMessages
+        // Прибираємо демо-повідомлення для чистого початку
+        // messages = Message.sampleMessages
         #endif
         
         // Підписуємось на зміни стану браузерного агента
